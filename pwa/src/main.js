@@ -28,8 +28,9 @@
 import { Secret } from '@todocloud/core/secret';
 import * as turso from '@todocloud/store-turso';
 import { browserStorages, forget, load, mixedContent, remembered, rememberedURL, save, validateURL, } from "./credentials.js";
-import { document, pageScheme } from "./dom.js";
+import { document, pageScheme, reloader, workers, } from "./dom.js";
 import { Router } from "./router.js";
+import { reloadOnUpdate } from "./update.js";
 import { install } from "./shim.js";
 /**
  * The shim is installed first, before anything can await, so that `app.js`
@@ -244,6 +245,7 @@ async function start() {
 // module that threw when loaded without a document would be a module nobody
 // could ever load to find out why.
 if (page !== undefined) {
+    reloadOnUpdate(workers(), reloader());
     void start();
 }
 //# sourceMappingURL=main.js.map
