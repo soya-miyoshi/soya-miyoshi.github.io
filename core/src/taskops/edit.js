@@ -332,7 +332,7 @@ export function parseMinutes(raw) {
         }
         return n;
     }
-    const ms = parseGoDuration(s);
+    const ms = parseDurationMs(s);
     if (ms === undefined || ms < 0) {
         throw invalidf(`${quote(raw)} is not a duration; write it as 25m, 2h or 1h30m`);
     }
@@ -350,8 +350,10 @@ const durationUnits = new Map([
     ['h', 3600000],
 ]);
 /**
- * parseGoDuration is `time.ParseDuration` in milliseconds, or undefined when
- * the string is not one. Go has no equivalent in the standard library of
+ * parseDurationMs is `time.ParseDuration` in milliseconds, or undefined when
+ * the string is not one. It is exported because it is the project's one
+ * spelling of a duration: `--estimate 25m` and `tdo ls --watch --interval 10s`
+ * must not disagree about what `1h30m` means. Go has no equivalent in the standard library of
  * either runtime, so the grammar is reproduced here: an optional sign, then
  * one or more decimal numbers — with an optional fraction — each carrying a
  * unit suffix. "0" on its own is accepted, as Go accepts it.
@@ -362,7 +364,7 @@ const durationUnits = new Map([
  * near it, and `parseMinutes` truncates to whole minutes afterwards either
  * way.
  */
-function parseGoDuration(s) {
+export function parseDurationMs(s) {
     let rest = s;
     let neg = false;
     if (rest.startsWith('+') || rest.startsWith('-')) {

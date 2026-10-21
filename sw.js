@@ -51,7 +51,7 @@
  * strategy: a new build is a new cache, and activate deletes the rest.
  * Bump it when the shell changes.
  */
-const CACHE = 'tdo-shell-v2-1bae6ec435a225aace2ff08eb6d0949e4d85f191';
+const CACHE = 'tdo-shell-v2-baf8240db308c34835e5e30c079d2df0437b4903';
 
 /**
  * SHELL is the allow-list. These are the only URLs this worker will ever put

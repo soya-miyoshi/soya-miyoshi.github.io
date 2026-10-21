@@ -122,7 +122,21 @@ const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 /** ForecastWeekDays is how many columns the week has: today and six more. */
 export const ForecastWeekDays = 7;
 /**
+ * ForecastMaxDays is the longest run of days a caller may ask for. The limit
+ * is not about cost — the days are cut out of a list already in memory — but
+ * about the answer staying one: past a couple of months of headings the
+ * reader is no longer looking at a forecast, and `tdo ls --sort due` is the
+ * question they actually have.
+ */
+export const ForecastMaxDays = 60;
+/**
  * forecastDays is the week, today first.
+ *
+ * `count` is how many days to lay out, the week by default. A shorter run is
+ * the same days cut short; a longer one keeps going past the fold, which is
+ * deliberate: `ForecastHorizonDays` is where the *flat* list stops trusting a
+ * defer date to be news, and a reader who asked for thirty days of headings
+ * has said they want the days anyway.
  *
  * There is no "Past" column. **Today carries everything already due**, which
  * is what a day opened in the morning has to say: an overdue bill is today's
@@ -134,9 +148,9 @@ export const ForecastWeekDays = 7;
  * `d3` tomorrow, and a view held open across midnight should follow the day
  * it means rather than the name it had.
  */
-export function forecastDays(now) {
+export function forecastDays(now, count = ForecastWeekDays) {
     const days = [];
-    for (let i = 0; i < ForecastWeekDays; i += 1) {
+    for (let i = 0; i < count; i += 1) {
         const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) + i * msPerDay);
         const today = i === 0;
         days.push({
@@ -150,9 +164,12 @@ export function forecastDays(now) {
     }
     return days;
 }
-/** forecastDay looks a day up by key, or returns undefined. */
-export function forecastDay(key, now) {
-    return forecastDays(now).find((d) => d.key === key);
+/**
+ * forecastDay looks a day up by key, or returns undefined. `count` is the run
+ * of days the key is looked for in, the week by default.
+ */
+export function forecastDay(key, now, count = ForecastWeekDays) {
+    return forecastDays(now, count).find((d) => d.key === key);
 }
 /**
  * dueOn is what a day's number counts: the deadlines that land on it. Tasks
