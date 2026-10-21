@@ -44,4 +44,26 @@ export function pageScheme(global = globalThis) {
     const scheme = loc?.protocol;
     return typeof scheme === 'string' ? scheme : '';
 }
+/**
+ * workers returns `navigator.serviceWorker`, or undefined where there is no
+ * navigator (`node --test`) and where the browser has no service worker
+ * support or withholds it outside a secure context. Every caller treats the
+ * absence as "no updates to notice", which is the truthful reading.
+ */
+export function workers(global = globalThis) {
+    const nav = global.navigator;
+    const sw = nav?.serviceWorker;
+    if (sw === null || sw === undefined) {
+        return undefined;
+    }
+    return sw;
+}
+/** reloader returns `location`, or undefined where there is none. */
+export function reloader(global = globalThis) {
+    const loc = global.location;
+    if (loc === null || loc === undefined) {
+        return undefined;
+    }
+    return loc;
+}
 //# sourceMappingURL=dom.js.map

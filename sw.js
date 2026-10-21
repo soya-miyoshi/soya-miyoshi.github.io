@@ -51,7 +51,7 @@
  * strategy: a new build is a new cache, and activate deletes the rest.
  * Bump it when the shell changes.
  */
-const CACHE = 'tdo-shell-v2-f6ec24a05bb2a7a066d4c2401f42ff938a0be723';
+const CACHE = 'tdo-shell-v2-36e524ace1a638dba141bd4a404a9ad7c25c9702';
 
 /**
  * SHELL is the allow-list. These are the only URLs this worker will ever put
@@ -80,6 +80,7 @@ const SHELL = [
   '/pwa/src/dom.js',
   '/pwa/src/router.js',
   '/pwa/src/shim.js',
+  '/pwa/src/update.js',
 
   '/store-turso/src/turso.js',
   '/store-turso/src/client.js',
