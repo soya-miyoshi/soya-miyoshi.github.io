@@ -207,8 +207,17 @@ export function validateURL(raw) {
  * so this is worth saying before the request rather than after: a
  * self-hosted sqld on `http://` is reachable from a page served on `http://`
  * or from localhost, and not otherwise.
+ *
+ * A loopback endpoint is the exception: Chrome and Firefox treat
+ * `localhost`, `127.0.0.1` and `[::1]` as potentially trustworthy and let an
+ * https page reach them, which is how a hosted copy of this app talks to a
+ * sqld on the same machine. Safari does not, so there the request can still
+ * fail — but refusing it here would stop the browsers that allow it.
  */
 export function mixedContent(pageOrigin, endpoint) {
-    return pageOrigin.startsWith('https:') && endpoint.startsWith('http:');
+    return pageOrigin.startsWith('https:') && endpoint.startsWith('http:') && !loopback(endpoint);
+}
+function loopback(endpoint) {
+    return /^http:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?(\/|$)/i.test(endpoint);
 }
 //# sourceMappingURL=credentials.js.map

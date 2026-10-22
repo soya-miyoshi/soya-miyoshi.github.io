@@ -30,6 +30,8 @@ import { httpError } from "./router.js";
  * and the page's own scope does not enter into it.
  */
 export const apiPrefix = '/api/';
+/** settingsPath is the one endpoint answered without a store behind it. */
+export const settingsPath = '/api/settings';
 /**
  * Shim is the installed interceptor. It holds the router it dispatches to in
  * one mutable slot, because connecting and disconnecting a store happens
@@ -40,6 +42,7 @@ export class Shim {
     /** original is the runtime's own fetch, captured before installation. */
     original;
     target;
+    settingsHandler;
     constructor(original) {
         this.original = original;
     }
@@ -50,6 +53,14 @@ export class Shim {
     /** disconnect leaves the shim installed and answering with 503. */
     disconnect() {
         this.target = undefined;
+    }
+    /**
+     * onSettings registers who answers `/api/settings`. It is answered whether
+     * or not a store is connected, because the dialog is how a store gets
+     * connected in the first place.
+     */
+    onSettings(handler) {
+        this.settingsHandler = handler;
     }
     /** connected reports whether a store is behind the shim. */
     connected() {
@@ -65,12 +76,16 @@ export class Shim {
         if (url === undefined || !url.pathname.startsWith(apiPrefix)) {
             return this.original(input, init);
         }
+        if (url.pathname === settingsPath && this.settingsHandler !== undefined) {
+            return this.settingsHandler(methodOf(input, init), bodyOf(input, init));
+        }
         const router = this.target;
         if (router === undefined) {
             // 503 and the `config` code, which is what `statusOf` gives a store
             // that is not usable yet, and what the CLI reports as exit 3. The page
-            // shows the message, so it says what to do.
-            return httpError(503, 'config', 'this app is not connected to a database yet; enter your Turso URL and token');
+            // opens on the perspectives whether or not a server is configured, so
+            // this message is what its status bar shows until one is.
+            return httpError(503, 'config', 'could not connect to sqlite server');
         }
         const method = methodOf(input, init);
         return router.handle(method, url.pathname, bodyOf(input, init));
