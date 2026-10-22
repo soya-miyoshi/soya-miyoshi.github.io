@@ -31,7 +31,7 @@
 // a lock on the inside of an open door, and pretending otherwise is worse
 // than saying so.
 import { API, maxBodyBytes } from '@todocloud/core/webapi';
-import { Mutex, errorEnvelope, exact, messageOf, statusOf, perspectivePath, taskPath, } from '@todocloud/core/webapi/http';
+import { Mutex, errorEnvelope, exact, messageOf, statusOf, perspectivePath, tagPath, taskPath, } from '@todocloud/core/webapi/http';
 // Re-exported because this module is what `shim.ts`, `main.ts` and the tests
 // are written against, and these were its own names before the one
 // implementation of each moved into `core`.
@@ -66,6 +66,7 @@ export class Router {
             // filter here too — in this front end that is Turso answering over
             // `fetch` rather than SQLite, which is exactly why the page must not
             // try to evaluate it itself.
+            { method: 'PATCH', match: tagPath(), handler: this.api.handleRenameTag },
             { method: 'GET', match: perspectivePath(), handler: this.api.handleRunPerspective },
             { method: 'POST', match: exact('/api/perspectives'), handler: this.api.handleSavePerspective },
             { method: 'DELETE', match: perspectivePath(), handler: this.api.handleRemovePerspective },
