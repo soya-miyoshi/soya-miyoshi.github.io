@@ -30,7 +30,7 @@ import * as turso from '@todocloud/store-turso';
 import { browserStorages, forget, load, mixedContent, remembered, rememberedURL, save, validateURL, } from "./credentials.js";
 import { document, pageScheme, reloader, workers, } from "./dom.js";
 import { Router, httpError } from "./router.js";
-import { reloadOnUpdate } from "./update.js";
+import { checkOnResume, reloadOnUpdate } from "./update.js";
 import { install } from "./shim.js";
 /**
  * The shim is installed first, before anything can await, so that `app.js`
@@ -224,6 +224,7 @@ async function start() {
 // could ever load to find out why.
 if (page !== undefined) {
     reloadOnUpdate(workers(), reloader());
+    checkOnResume(workers(), page);
     void start();
 }
 //# sourceMappingURL=main.js.map
