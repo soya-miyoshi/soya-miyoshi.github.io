@@ -67,7 +67,7 @@
  * build is the same cache, and that is the right answer for a directory you
  * are rebuilding on purpose.
  */
-const CACHE = 'tdo-shell-d04263103f1d5d50f38b3f0f09cf4fa9882171cd';
+const CACHE = 'tdo-shell-209b15fd2b003482952920deb798f1db8a908117';
 
 /**
  * SHELL is the allow-list. These are the only URLs this worker will ever put
