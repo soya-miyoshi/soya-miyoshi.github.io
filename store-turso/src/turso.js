@@ -50,6 +50,7 @@ import { autoComplete, triggersAutoCompletion } from '@todocloud/core/store/comp
 import { Fields, Task, formatTime, parseTime, } from '@todocloud/core/task';
 import { Client, endpointFor, isRemoteError, } from "./client.js";
 import { newStatement, } from "./protocol.js";
+import * as eventOps from "./events.js";
 import * as query from "./query.js";
 import * as schemaOps from "./schema.js";
 export { SchemaVersion, metaSchemaVersion } from "./schema.js";
@@ -151,6 +152,31 @@ export class Store {
     }
     removeTag(name) {
         return query.removeTag(this, name);
+    }
+    // --- events (events.ts) -----------------------------------------------
+    addEvent(e) {
+        return eventOps.addEvent(this, e);
+    }
+    getEvent(eventID) {
+        return eventOps.getEvent(this, eventID);
+    }
+    findEventByPrefix(prefix) {
+        return eventOps.findEventByPrefix(this, prefix);
+    }
+    events() {
+        return eventOps.events(this);
+    }
+    updateEvent(e) {
+        return eventOps.updateEvent(this, e);
+    }
+    removeEvent(eventID) {
+        return eventOps.removeEvent(this, eventID);
+    }
+    setWaits(taskID, eventIDs) {
+        return eventOps.setWaits(this, taskID, eventIDs);
+    }
+    waits() {
+        return eventOps.waits(this);
     }
     savePerspective(p) {
         return query.savePerspective(this, p);
@@ -652,6 +678,9 @@ export function escapeLike(s) {
  */
 function deleteTask(b, taskID) {
     b.add(`DELETE FROM task_tags WHERE task_id = ?`, false, taskID);
+    b.add(`DELETE FROM task_events WHERE task_id = ?`, false, taskID);
+    // An event of a purged project is kept, and belongs to none.
+    b.add(`UPDATE events SET project_id = NULL WHERE project_id = ?`, false, taskID);
     b.add(`DELETE FROM tasks WHERE id = ?`, false, taskID);
 }
 /**
@@ -889,7 +918,7 @@ export function integer(v, column) {
     }
     return n;
 }
-function optionalColumn(v, column) {
+export function optionalColumn(v, column) {
     const s = optionalText(v, column);
     if (s === '') {
         return undefined;
@@ -957,7 +986,7 @@ function nullString(s) {
     }
     return s;
 }
-function optionalTime(t) {
+export function optionalTime(t) {
     if (t === undefined) {
         return null;
     }

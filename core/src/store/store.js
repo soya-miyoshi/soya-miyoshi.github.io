@@ -168,6 +168,19 @@ export const RuleTagStatus = 'tag_status';
  */
 export const RuleAncestorTagStatus = 'ancestor_tag_status';
 /**
+ * RuleEvent is an item waiting for an event that has not occurred. blockedBy
+ * names the event — the first such one, in id order — which is what a caller
+ * would go and mark as occurred. It is an event id, not a task id.
+ */
+export const RuleEvent = 'event';
+/**
+ * RuleAncestorEvent is the same rule applied to an ancestor: a project that
+ * waits for an event holds back everything inside it, as putting it on hold
+ * would. blockedBy names the event, not the project, since the event is what
+ * will change the answer.
+ */
+export const RuleAncestorEvent = 'ancestor_event';
+/**
  * ruleDeferral reports whether the rule is a defer date rather than a hold, a
  * completion or an ordering. `tdo ls --deferred` asks what is waiting for a
  * date, which is a different question from what is stuck.
@@ -192,6 +205,13 @@ export class Availability {
      * tag's stored spelling, which is what a user would type to lift the hold.
      */
     tag = '';
+    /**
+     * waitsOn is every event the item waits for, whether or not it has occurred.
+     * It is set by Tree on every answer so that the one call that already
+     * computes availability also says what an item is waiting for, in id order;
+     * it is empty for an item that waits for nothing.
+     */
+    waitsOn = [];
     constructor(init) {
         if (init === undefined) {
             return;

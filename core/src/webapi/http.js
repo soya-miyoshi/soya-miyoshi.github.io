@@ -174,4 +174,22 @@ export function taskPath(tail) {
         return { id: taskID };
     };
 }
+/**
+ * eventPath matches `/api/events/{id}` and `/api/events/{id}/<tail>`,
+ * capturing the id, the way taskPath does for a task.
+ */
+export function eventPath(tail) {
+    return (pathname) => {
+        const parts = pathname.split('/');
+        // '', 'api', 'events', id, …tail
+        if (parts.length !== (tail === '' ? 4 : 5) || parts[1] !== 'api' || parts[2] !== 'events') {
+            return undefined;
+        }
+        const eventID = parts[3] ?? '';
+        if (eventID === '' || (tail !== '' && parts[4] !== tail)) {
+            return undefined;
+        }
+        return { id: eventID };
+    };
+}
 //# sourceMappingURL=http.js.map

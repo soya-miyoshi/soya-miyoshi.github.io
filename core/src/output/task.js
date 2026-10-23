@@ -14,7 +14,7 @@
 //   - Go returned an `error` from `Table` and `Detail`, which was only ever
 //     the writer's. A failing writer throws here instead.
 import { nextReviewAt } from "../recur.js";
-import { Availability, RuleAncestorDeferred, RuleAncestorDeleted, RuleAncestorSequential, RuleAncestorStatus, RuleAncestorTagStatus, RuleDeferred, RuleDeleted, RuleMissingParent, RuleNone, RuleNotActionable, RuleSequential, RuleStatus, RuleTagStatus, } from "../store/store.js";
+import { Availability, RuleAncestorDeferred, RuleAncestorDeleted, RuleAncestorSequential, RuleAncestorStatus, RuleAncestorTagStatus, RuleDeferred, RuleDeleted, RuleMissingParent, RuleNone, RuleNotActionable, RuleSequential, RuleStatus, RuleTagStatus, RuleEvent, RuleAncestorEvent, } from "../store/store.js";
 import { Fields, KindFolder, KindProject, StatusDone, StatusDropped, StatusOnHold, formatTime, } from "../task.js";
 /**
  * titleWidth is the longest title the table prints before truncating it. The
@@ -390,6 +390,10 @@ export function BlockedReason(a, by) {
             return `${name} has not come up yet in its sequential list`;
         case RuleTagStatus:
             return `its tag ${quote(sanitize(a.tag))} is not active`;
+        case RuleEvent:
+            return `it is waiting for the event ${name}`;
+        case RuleAncestorEvent:
+            return `what contains it is waiting for the event ${name}`;
         case RuleAncestorTagStatus:
             return `${name}, which contains it, has the tag ${quote(sanitize(a.tag))}, which is not active`;
         default:

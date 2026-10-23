@@ -8,7 +8,7 @@
 // documented bytes and not a tidiness.
 import { nextReviewAt } from "../recur.js";
 import { Availability } from "../store/store.js";
-import { KeyAvailable, KeyBlockedBy, KeyNextReview, formatTime } from "../task.js";
+import { KeyAvailable, KeyBlockedBy, KeyNextReview, KeyWaitsOn, formatTime } from "../task.js";
 /**
  * NewTaskView pairs one task with the availability answer for it. asked is
  * false when the caller did not compute availability, which emits null for
@@ -52,6 +52,13 @@ export class TaskView {
                 blocker = blockedBy(this.availability);
             }
             out[KeyBlockedBy] = blocker;
+            // The events it waits for, present only when there are some: an item
+            // that waits for nothing carries nothing. Both occurred and pending
+            // ones are listed, so a caller sees the whole dependency, and
+            // `blocked_by` says which one is in the way.
+            if (this.availability.waitsOn.length > 0) {
+                out[KeyWaitsOn] = [...this.availability.waitsOn];
+            }
         }
         else {
             out[KeyAvailable] = null;

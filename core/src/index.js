@@ -11,6 +11,7 @@ export * from "./task.js";
 // separate Go package and export bare names (`initial`, `steps`, `validate`)
 // that would mislead at the top level. Providers import them by path.
 export * from "./store/store.js";
+export * from "./store/event.js";
 export * from "./store/availability.js";
 export * from "./store/completion.js";
 export * from "./store/filter.js";

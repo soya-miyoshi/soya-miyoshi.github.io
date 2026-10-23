@@ -67,7 +67,7 @@
  * build is the same cache, and that is the right answer for a directory you
  * are rebuilding on purpose.
  */
-const CACHE = 'tdo-shell-dc3141fcaffeb557ae1e56fdc4444b9a2ae95b78';
+const CACHE = 'tdo-shell-699eb3d115a83356f9a04d7a71a647beef72c88a';
 
 /**
  * SHELL is the allow-list. These are the only URLs this worker will ever put
@@ -102,6 +102,7 @@ const SHELL = [
   '/store-turso/src/client.js',
   '/store-turso/src/protocol.js',
   '/store-turso/src/query.js',
+  '/store-turso/src/events.js',
   '/store-turso/src/schema.js',
 
   '/core/src/exit.js',
@@ -114,6 +115,7 @@ const SHELL = [
   '/core/src/store/store.js',
   '/core/src/store/availability.js',
   '/core/src/store/completion.js',
+  '/core/src/store/event.js',
   '/core/src/store/filter.js',
   '/core/src/store/schema.js',
   '/core/src/store/version.js',

@@ -7,6 +7,7 @@ import { ErrNotFound, mergeTags, sortTasks, tagKey, validTagStatus, } from '@tod
 import { Tree } from '@todocloud/core/store/availability';
 import { Filter, filterFromJSON } from '@todocloud/core/store/filter';
 import { StatusActive, Task, formatTime, parseTime, } from '@todocloud/core/task';
+import { eventRowsSQL, linkRowsSQL, scanEvents, scanLinks } from "./events.js";
 import { Batch, attachTags, columns, integer, messageOf, scanTask, text, } from "./turso.js";
 /**
  * list returns the tasks matching f, sorted as f requests.
@@ -45,6 +46,12 @@ export async function list(s, f) {
         // above.
         treeAt = b.len();
         b.add(`SELECT ${columns} FROM tasks`, true);
+        // The rules that read more than the rows: what each tag's status is and
+        // which events exist. The tags themselves are the pipeline's second
+        // result, which covers every task and not only the candidates.
+        b.add(tagRowsSQL, true);
+        b.add(eventRowsSQL, true);
+        b.add(linkRowsSQL, true);
     }
     let res;
     try {
@@ -59,7 +66,11 @@ export async function list(s, f) {
         candidates = scanTasks(res[0]);
         attachTags(candidates, res[tagsAt]);
         if (treeAt >= 0) {
-            tree = treeFrom(res[treeAt]);
+            const built = treeWithNodes(res[treeAt]);
+            tree = built.tree;
+            attachTags(built.nodes, res[tagsAt]);
+            tree.setTagStatuses(scanTagRows(res[treeAt + 1]));
+            tree.setEvents(scanEvents(res[treeAt + 2]), scanLinks(res[treeAt + 3]));
         }
     }
     catch (err) {
@@ -217,6 +228,8 @@ export async function loadTree(s) {
     b.add(`SELECT ${columns} FROM tasks`, true);
     b.add(allTagsSQL, true);
     b.add(tagRowsSQL, true);
+    b.add(eventRowsSQL, true);
+    b.add(linkRowsSQL, true);
     let res;
     try {
         res = await s.send(b);
@@ -234,6 +247,12 @@ export async function loadTree(s) {
         throw new Error(`turso: read the tree: ${messageOf(err)}`, { cause: err });
     }
     tree.setTagStatuses(scanTagRows(res[2]));
+    try {
+        tree.setEvents(scanEvents(res[3]), scanLinks(res[4]));
+    }
+    catch (err) {
+        throw new Error(`turso: read the tree: ${messageOf(err)}`, { cause: err });
+    }
     return tree;
 }
 /** allTagsSQL and tagRowsSQL are the two tag reads every tree needs. */

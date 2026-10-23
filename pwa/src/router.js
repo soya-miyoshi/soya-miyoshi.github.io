@@ -31,7 +31,7 @@
 // a lock on the inside of an open door, and pretending otherwise is worse
 // than saying so.
 import { API, maxBodyBytes } from '@todocloud/core/webapi';
-import { Mutex, errorEnvelope, exact, messageOf, statusOf, perspectivePath, tagPath, taskPath, } from '@todocloud/core/webapi/http';
+import { Mutex, errorEnvelope, exact, messageOf, statusOf, perspectivePath, eventPath, tagPath, taskPath, } from '@todocloud/core/webapi/http';
 // Re-exported because this module is what `shim.ts`, `main.ts` and the tests
 // are written against, and these were its own names before the one
 // implementation of each moved into `core`.
@@ -62,6 +62,8 @@ export class Router {
             { method: 'POST', match: taskPath('date'), handler: this.api.handleDate },
             { method: 'POST', match: taskPath('move'), handler: this.api.handleMove },
             { method: 'POST', match: taskPath('reorder'), handler: this.api.handleReorder },
+            { method: 'POST', match: eventPath('status'), handler: this.api.handleEventStatus },
+            { method: 'PATCH', match: eventPath(''), handler: this.api.handleEventEdit },
             // The same three the local viewer serves. The store runs the saved
             // filter here too — in this front end that is Turso answering over
             // `fetch` rather than SQLite, which is exactly why the page must not

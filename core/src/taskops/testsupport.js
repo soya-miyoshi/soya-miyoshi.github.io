@@ -199,6 +199,30 @@ export class MemStore {
     removeTag() {
         return Promise.reject(new Error('removeTag is not used by these tests'));
     }
+    addEvent() {
+        return Promise.reject(new Error('events are not used by these tests'));
+    }
+    getEvent() {
+        return Promise.reject(new Error('events are not used by these tests'));
+    }
+    findEventByPrefix() {
+        return Promise.reject(new Error('events are not used by these tests'));
+    }
+    events() {
+        return Promise.resolve([]);
+    }
+    updateEvent() {
+        return Promise.reject(new Error('events are not used by these tests'));
+    }
+    removeEvent() {
+        return Promise.reject(new Error('events are not used by these tests'));
+    }
+    setWaits() {
+        return Promise.reject(new Error('events are not used by these tests'));
+    }
+    waits() {
+        return Promise.resolve([]);
+    }
     savePerspective() {
         return Promise.reject(new Error('savePerspective is not used by these tests'));
     }
