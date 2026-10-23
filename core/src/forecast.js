@@ -24,7 +24,18 @@ export const ForecastOrders = ['defer', 'due'];
 export const ForecastHorizonDays = 7;
 const msPerDay = 86_400_000;
 /**
- * calendarDays counts whole calendar days from `now` to `at`, in UTC. It is a
+ * today is the calendar day `now` falls on *where the program runs* — the
+ * browser's zone in the viewer, the process's in the CLI — written as that
+ * day at 00:00:00Z so it compares with a stored date. Dates are stored as
+ * UTC midnights, but "today" is the reader's: at 01:00 in Tokyo it is already
+ * tomorrow, and counting the day in UTC kept the Forecast on yesterday until
+ * breakfast. The zone is whatever the runtime reports, never a constant.
+ */
+export function today(now) {
+    return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+}
+/**
+ * calendarDays counts whole calendar days from `now` to `at`. `at` is read in UTC and `now` in the local zone (see `today`). It is a
  * calendar question and not an hourly one: an item due at midnight this
  * morning is still due today, an hour overdue, and calling that "yesterday" is
  * how a list starts lying to its reader. UTC is the same frame `--due
@@ -32,7 +43,7 @@ const msPerDay = 86_400_000;
  */
 export function calendarDays(at, now) {
     const a = Date.UTC(at.getUTCFullYear(), at.getUTCMonth(), at.getUTCDate());
-    const n = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    const n = today(now).getTime();
     return Math.round((a - n) / msPerDay);
 }
 /**
@@ -151,14 +162,14 @@ export const ForecastMaxDays = 60;
 export function forecastDays(now, count = ForecastWeekDays) {
     const days = [];
     for (let i = 0; i < count; i += 1) {
-        const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) + i * msPerDay);
-        const today = i === 0;
+        const date = new Date(today(now).getTime() + i * msPerDay);
+        const isToday = i === 0;
         days.push({
-            key: today ? 'today' : `d${i}`,
-            label: today ? 'Today' : WEEKDAYS[date.getUTCDay()],
+            key: isToday ? 'today' : `d${i}`,
+            label: isToday ? 'Today' : WEEKDAYS[date.getUTCDay()],
             date,
-            today,
-            dueMatch: today ? (d) => d <= 0 : (d) => d === i,
+            today: isToday,
+            dueMatch: isToday ? (d) => d <= 0 : (d) => d === i,
             startMatch: (d) => d === i,
         });
     }
@@ -179,25 +190,36 @@ export function forecastDay(key, now, count = ForecastWeekDays) {
 export function dueOn(tasks, day, now) {
     return tasks.filter((t) => inForecast(t) && t.dueAt !== undefined && day.dueMatch(calendarDays(t.dueAt, now)));
 }
+/** noneHeld is `held` when the caller has not asked what is blocking what. */
+const noneHeld = new Set();
 /**
  * startsOn is the other half: what becomes available that day. It is counted
  * apart from the deadlines, because a deadline and a release are not the same
  * news — a day showing "5" that turns out to be five things that merely became
  * available reads as pressure that is not there, and the one real deadline
  * hides inside it.
+ *
+ * A defer date that has passed belongs to no day, with one exception: a task in
+ * `held` — one something other than its own defer date is still blocking. An
+ * available one is on Next from then on; a blocked one is on no list that says
+ * "now", so its date would vanish the moment it came. Today keeps it until
+ * what blocks it goes. `held` is the ids; core cannot compute availability.
  */
-export function startsOn(tasks, day, now) {
-    return tasks.filter((t) => inForecast(t) && t.deferAt !== undefined && day.startMatch(calendarDays(t.deferAt, now)));
+export function startsOn(tasks, day, now, held = noneHeld) {
+    return tasks.filter((t) => inForecast(t) &&
+        t.deferAt !== undefined &&
+        (day.startMatch(calendarDays(t.deferAt, now)) ||
+            (day.today && calendarDays(t.deferAt, now) < 0 && held.has(t.id))));
 }
 /**
  * forecastOn is one day of the week: everything it has to say, deadlines
  * first and then what is released, never the same task twice, in the order
  * the whole Forecast is read in.
  */
-export function forecastOn(tasks, day, order, now) {
+export function forecastOn(tasks, day, order, now, held = noneHeld) {
     const items = dueOn(tasks, day, now);
     const seen = new Set(items.map((t) => t.id));
-    for (const t of startsOn(tasks, day, now)) {
+    for (const t of startsOn(tasks, day, now, held)) {
         if (!seen.has(t.id)) {
             items.push(t);
         }
